@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
     <title>Личный Сейф</title>
-    <script src="https://cloudflare.com"></script>
     <style>
         :root { --bg: #121214; --card-bg: #1a1a1e; --text: #e1e1e6; --primary: #00b0ff; --border: #29292e; --accent: #00e676; }
         body { font-family: system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
@@ -25,8 +24,8 @@
 
     <div class="container" id="auth-box">
         <h3>Введите ключ доступа</h3>
-        <input type="password" id="password-input" placeholder="Введите ваш пароль" onkeydown="if(event.key==='Enter') decryptData()">
-        <button onclick="decryptData()">Открыть архив</button>
+        <input type="password" id="password-input" placeholder="Введите ваш пароль" onkeydown="if(event.key==='Enter') handleAuth()">
+        <button onclick="handleAuth()">Открыть архив</button>
     </div>
 
     <div class="container hidden" id="content-box">
@@ -51,31 +50,41 @@
 
         let currentPassword = "";
 
-        function decryptData() {
+        // Вспомогательные функции для работы со встроенным крипто-API браузера
+        async function getKey(password, salt) {
+            const enc = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveKey"]);
+            return crypto.subtle.deriveKey({ name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+        }
+
+        async function handleAuth() {
             currentPassword = document.getElementById('password-input').value;
             if(!currentPassword) { alert('Введите пароль!'); return; }
 
-            // Если сайт пустой (первый запуск), пускаем под любым введенным паролем
             if (ENCRYPTED_DATA === "" || ENCRYPTED_DATA.trim().length < 10) {
-                document.getElementById('secret-text').value = "Сейф успешно активирован!\n\n1. Сотрите этот текст.\n2. Напишите ваши ссылки или личные заметки.\n3. Нажмите зеленую кнопку 'Сохранить изменения'.";
+                document.getElementById('secret-text').value = "Автономный сейф активирован!\n\n1. Сотрите этот текст.\n2. Напишите ваши ссылки или личные заметки.\n3. Нажмите кнопку 'Сохранить изменения'.";
                 document.getElementById('auth-box').classList.add('hidden');
                 document.getElementById('content-box').classList.remove('hidden');
                 return;
             }
 
             try {
-                const bytes = CryptoJS.AES.decrypt(ENCRYPTED_DATA.trim(), currentPassword);
-                const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
+                const raw = atob(ENCRYPTED_DATA.trim());
+                const rawBytes = new Uint8Array(raw.length);
+                for (let i = 0; i < raw.length; i++) rawBytes[i] = raw.charCodeAt(i);
 
-                if (decryptedText && decryptedText.length > 0) {
-                    document.getElementById('secret-text').value = decryptedText;
-                    document.getElementById('auth-box').classList.add('hidden');
-                    document.getElementById('content-box').classList.remove('hidden');
-                } else {
-                    alert('Неверный пароль! Проверьте раскладку клавиатуры.');
-                }
+                const salt = rawBytes.slice(0, 16);
+                const iv = rawBytes.slice(16, 28);
+                const data = rawBytes.slice(28);
+
+                const key = await getKey(currentPassword, salt);
+                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, data);
+                
+                document.getElementById('secret-text').value = new TextDecoder().decode(decrypted);
+                document.getElementById('auth-box').classList.add('hidden');
+                document.getElementById('content-box').classList.remove('hidden');
             } catch (e) {
-                alert('Ошибка расшифровки! Проверьте пароль или отключите встроенный переводчик страниц.');
+                alert('Неверный пароль или данные искажены!');
             }
         }
 
@@ -85,12 +94,9 @@
             navigator.clipboard.writeText(textarea.value).then(() => alert('Текст успешно скопирован!'));
         }
 
-        function encryptAndGenerate() {
+        async function encryptAndGenerate() {
             const freshText = document.getElementById('secret-text').value;
-            if (!freshText.trim()) {
-                alert('Текст не может быть пустым!');
-                return;
-            }
+            if (!freshText.trim()) { alert('Текст не может быть пустым!'); return; }
             
             if (!currentPassword) {
                 currentPassword = prompt("Подтвердите ваш текущий пароль для шифрования:");
@@ -98,18 +104,27 @@
             }
 
             try {
-                // Шифруем данные
-                const newEncrypted = CryptoJS.AES.encrypt(freshText, currentPassword).toString();
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const key = await getKey(currentPassword, salt);
+                const enc = new TextEncoder();
+                const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, enc.encode(freshText));
+
+                const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+                combined.set(salt, 0);
+                combined.set(iv, salt.length);
+                combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+                let binary = "";
+                for (let i = 0; i < combined.length; i++) binary += String.fromCharCode(combined[i]);
+                const base64 = btoa(binary);
                 
-                // Формируем чистую готовую строчку для вставки в GitHub
-                const finalLine = 'let ENCRYPTED_DATA = "' + newEncrypted + '";';
-                
-                document.getElementById('new-code-output').innerText = finalLine;
+                document.getElementById('new-code-output').innerText = 'let ENCRYPTED_DATA = "' + base64 + '";';
                 document.getElementById('output-container').classList.remove('hidden');
                 
-                alert('Успешно зашифровано! Зелёная строка сгенерирована в самом низу страницы. Прокрутите экран вниз и скопируйте её.');
+                alert('Успешно зашифровано! Зелёная строка сгенерирована в самом низу страницы.');
             } catch (err) {
-                alert('Техническая ошибка при шифровании: ' + err.message);
+                alert('Ошибка при шифровании: ' + err.message);
             }
         }
 
