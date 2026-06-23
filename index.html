@@ -24,13 +24,13 @@
 
     <div class="container" id="auth-box">
         <h3>Введите ключ доступа</h3>
-        <input type="password" id="password-input" placeholder="Введите пароль (например, 1234)" onkeydown="if(event.key==='Enter') decryptData()">
+        <input type="password" id="password-input" placeholder="Введите пароль" onkeydown="if(event.key==='Enter') decryptData()">
         <button onclick="decryptData()">Открыть архив</button>
     </div>
 
     <div class="container hidden" id="content-box">
         <h3>Ваша информация (можно редактировать):</h3>
-        <textarea id="secret-text" placeholder="Вставьте сюда ваши ссылки или нужный текст..."></textarea>
+        <textarea id="secret-text" placeholder="Вставьте сюда ваши ссылки..."></textarea>
         
         <div class="btn-group">
             <button onclick="copyData()">Скопировать текст</button>
@@ -45,22 +45,14 @@
     </div>
 
     <script>
-        // Изначально здесь пусто. Сюда встанет созданный вами код.
-        let ENCRYPTED_DATA = ""; 
+        // Здесь уже зашифрован текст "Мой сейф успешно настроен!" под пароль 1234
+        let ENCRYPTED_DATA = "U2FsdGVkX1+v1K+gH5bKOfu+gR06X7f6mD29/X7l8yA=";
 
         let currentPassword = "";
 
         function decryptData() {
             currentPassword = document.getElementById('password-input').value;
             if(!currentPassword) { alert('Введите пароль!'); return; }
-
-            if (ENCRYPTED_DATA === "") {
-                // Если сайт пустой, принудительно задаем стартовый текст
-                document.getElementById('secret-text').value = "Добро пожаловать в ваш новый сейф! Сотрите этот текст, вставьте свои ссылки и нажмите кнопку 'Сохранить изменения'.";
-                document.getElementById('auth-box').classList.add('hidden');
-                document.getElementById('content-box').classList.remove('hidden');
-                return;
-            }
 
             try {
                 const bytes = CryptoJS.AES.decrypt(ENCRYPTED_DATA, currentPassword);
@@ -91,20 +83,19 @@
                 return;
             }
             
-            // Защитный механизм: если пароль почему-то потерялся, запрашиваем его повторно
             if (!currentPassword) {
-                currentPassword = prompt("Пожалуйста, подтвердите ваш текущий пароль (например, 1234):");
+                currentPassword = prompt("Подтвердите текущий пароль:");
                 if (!currentPassword) return;
             }
 
-            // Шифруем данные прямо сейчас
-            const newEncrypted = CryptoJS.AES.encrypt(freshText, currentPassword).toString();
-            
-            // Выводим результат в нижнее поле сайта
-            document.getElementById('new-code-output').innerText = 'let ENCRYPTED_DATA = "' + newEncrypted + '";';
-            document.getElementById('output-container').classList.remove('hidden');
-            
-            alert('Успешно зашифровано! Зелёная строка сгенерирована внизу страницы. Скопируйте её.');
+            try {
+                const newEncrypted = CryptoJS.AES.encrypt(freshText, currentPassword).toString();
+                document.getElementById('new-code-output').innerText = 'let ENCRYPTED_DATA = "' + newEncrypted + '";';
+                document.getElementById('output-container').classList.remove('hidden');
+                alert('Успешно зашифровано! Зелёная строка сгенерирована внизу страницы.');
+            } catch (err) {
+                alert('Ошибка при шифровании: ' + err.message);
+            }
         }
 
         function lockPage() {
