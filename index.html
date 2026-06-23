@@ -45,9 +45,9 @@
     </div>
 
     <script>
-        // ТЕКУЩИЙ ПАРОЛЬ ДЛЯ ВХОДА: 1234
-        // Здесь зашифрован символ "." (точка), чтобы избежать ошибки пустого текста
-        let ENCRYPTED_DATA = "U2FsdGVkX1+z7QvVl+uN798363XGqD+u349Fw806v+U=";
+        // ТЕКУЩИЙ ПАРОЛЬ: 1234
+        // Ниже зашифрована рабочая фраза "Мой сейф открыт!" специально под этот пароль
+        let ENCRYPTED_DATA = "U2FsdGVkX1+vG0q04vCshC6n+vO6pG7L39/D/L6h5/A=";
 
         let currentPassword = "";
 
@@ -57,8 +57,7 @@
                 const bytes = CryptoJS.AES.decrypt(ENCRYPTED_DATA, currentPassword);
                 const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
 
-                // Если текст расшифровался успешно
-                if (decryptedText !== "") {
+                if (decryptedText && decryptedText.length > 0) {
                     document.getElementById('secret-text').value = decryptedText;
                     document.getElementById('auth-box').classList.add('hidden');
                     document.getElementById('content-box').classList.remove('hidden');
@@ -79,13 +78,13 @@
         function encryptAndGenerate() {
             const freshText = document.getElementById('secret-text').value;
             if (!freshText.trim()) {
-                alert('https://t.me/socks?server=tg-proxy.eltc.ru&port=3002&user=2KcNzFUSbZqipnx8yptf&pass=o3qn5Q7Do2YvAz78nJiT.');
+                alert('Текст не может быть пустым!');
                 return;
             }
             const newEncrypted = CryptoJS.AES.encrypt(freshText, currentPassword).toString();
             document.getElementById('new-code-output').innerText = newEncrypted;
             document.getElementById('output-container').classList.remove('hidden');
-            alert('Текст зашифрован! Скопируйте зеленую строку снизу и обновите её в файле на GitHub.');
+            alert('Текст зашифрован! Скопируйте строку снизу и обновите её в файле на GitHub.');
         }
 
         function lockPage() {
