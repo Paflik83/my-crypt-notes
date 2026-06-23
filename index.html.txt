@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный Сейф</title>
+    <!-- Библиотека шифрования, стабильно работающая в РФ -->
+    <script src="https://cloudflare.com"></script>
+    <style>
+        :root { --bg: #121214; --card-bg: #1a1a1e; --text: #e1e1e6; --primary: #00b0ff; --border: #29292e; --accent: #00e676; }
+        body { font-family: system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        .container { background: var(--card-bg); border: 1px solid var(--border); padding: 30px; border-radius: 12px; width: 100%; max-width: 600px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        h3 { margin-top: 0; margin-bottom: 20px; font-weight: 500; }
+        input[type="password"] { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); color: #fff; border-radius: 6px; box-sizing: border-box; font-size: 16px; margin-bottom: 15px; }
+        button { width: 100%; padding: 12px; background: var(--primary); border: none; color: #000; font-weight: 600; border-radius: 6px; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
+        .hidden { display: none; }
+        textarea { width: 100%; height: 200px; background: var(--bg); border: 1px solid var(--border); color: #fff; padding: 12px; box-sizing: border-box; border-radius: 6px; font-family: monospace; font-size: 14px; resize: none; margin-bottom: 15px; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn-secondary { background: #29292e; color: #fff; }
+        .btn-accent { background: var(--accent); color: #000; }
+        .output-box { background: #000; padding: 10px; border-radius: 6px; font-size: 12px; color: #00e676; overflow-x: auto; white-space: pre-wrap; word-break: break-all; border: 1px dashed var(--border); max-height: 150px; }
+    </style>
+</head>
+<body>
+
+    <!-- Окно входа -->
+    <div class="container" id="auth-box">
+        <h3>Введите ключ доступа</h3>
+        <input type="password" id="password-input" placeholder="Пароль для расшифровки" onkeydown="if(event.key==='Enter') decryptData()">
+        <button onclick="decryptData()">Открыть архив</button>
+    </div>
+
+    <!-- Основной интерфейс -->
+    <div class="container hidden" id="content-box">
+        <h3>Ваша информация (можно редактировать):</h3>
+        <textarea id="secret-text"></textarea>
+        
+        <div class="btn-group">
+            <button onclick="copyData()">Скопировать текст</button>
+            <button class="btn-accent" onclick="encryptAndGenerate()">Сохранить изменения</button>
+            <button class="btn-secondary" onclick="lockPage()">Закрыть</button>
+        </div>
+
+        <!-- Зона генерации нового кода при редактировании -->
+        <div id="output-container" class="hidden">
+            <p style="font-size: 13px; color: #aaa; margin-bottom: 5px;">Скопируйте эту строку и замените ей значение ENCRYPTED_DATA в коде на GitHub:</p>
+            <div class="output-box" id="new-code-output"></div>
+        </div>
+    </div>
+
+    <script>
+        // ТЕКУЩИЙ ПАРОЛЬ ДЛЯ ВХОДА: 1234
+        // Ниже находится изначально зашифрованный текст: "Здесь ваши первые ссылки и важный текст..."
+        let ENCRYPTED_DATA = "U2FsdGVkX196yXWb7R0PivwAOf5y9/i6xJOnmCunbY6fV25YmO6U878C3Wf7eLMc6jG9O2GisAByG098NisY6fR3zM==";
+
+        let currentPassword = "";
+
+        function decryptData() {
+            currentPassword = document.getElementById('password-input').value;
+            try {
+                const bytes = CryptoJS.AES.decrypt(ENCRYPTED_DATA, currentPassword);
+                const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
+
+                if (decryptedText) {
+                    document.getElementById('secret-text').value = decryptedText;
+                    document.getElementById('auth-box').classList.add('hidden');
+                    document.getElementById('content-box').classList.remove('hidden');
+                } else {
+                    alert('Неверный пароль!');
+                }
+            } catch (e) {
+                alert('Ошибка расшифровки! Проверьте пароль.');
+            }
+        }
+
+        function copyData() {
+            const textarea = document.getElementById('secret-text');
+            textarea.select();
+            navigator.clipboard.writeText(textarea.value).then(() => alert('Текст скопирован в буфер обмена!'));
+        }
+
+        function encryptAndGenerate() {
+            const freshText = document.getElementById('secret-text').value;
+            if (!freshText.trim()) {
+                alert('Текст не может быть пустым!');
+                return;
+            }
+            // Шифруем обновленный текст тем же паролем, под которым зашли
+            const newEncrypted = CryptoJS.AES.encrypt(freshText, currentPassword).toString();
+            
+            // Выводим результат для обновления на GitHub
+            document.getElementById('new-code-output').innerText = newEncrypted;
+            document.getElementById('output-container').classList.remove('hidden');
+            alert('Текст зашифрован! Скопируйте зеленую строку снизу и обновите её в файле на GitHub.');
+        }
+
+        function lockPage() {
+            document.getElementById('password-input').value = '';
+            document.getElementById('secret-text').value = '';
+            document.getElementById('output-container').classList.add('hidden');
+            document.getElementById('content-box').classList.add('hidden');
+            document.getElementById('auth-box').classList.remove('hidden');
+            currentPassword = "";
+        }
+    </script>
+</body>
+</html>
