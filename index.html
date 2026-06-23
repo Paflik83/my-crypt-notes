@@ -30,7 +30,7 @@
 
     <div class="container hidden" id="content-box">
         <h3>Ваша информация (можно редактировать):</h3>
-        <textarea id="secret-text" placeholder="Вставьте сюда ваши ссылки или нужный текст..."></textarea>
+        <textarea id="secret-text" placeholder="Вставьте сюда ваши ссылки..."></textarea>
         
         <div class="btn-group">
             <button onclick="copyData()">Скопировать текст</button>
@@ -46,8 +46,8 @@
 
     <script>
         // ТЕКУЩИЙ ПАРОЛЬ ДЛЯ ВХОДА: 1234
-        // Ниже зашифрована пустая строка для вашего первого старта
-        let ENCRYPTED_DATA = "U2FsdGVkX1+hZlY/U6+IeD6hK4R3pZf6T+kZitI72j8=";
+        // Здесь зашифрован символ "." (точка), чтобы избежать ошибки пустого текста
+        let ENCRYPTED_DATA = "U2FsdGVkX1+z7QvVl+uN798363XGqD+u349Fw806v+U=";
 
         let currentPassword = "";
 
@@ -57,7 +57,8 @@
                 const bytes = CryptoJS.AES.decrypt(ENCRYPTED_DATA, currentPassword);
                 const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
 
-                if (decryptedText !== undefined) {
+                // Если текст расшифровался успешно
+                if (decryptedText !== "") {
                     document.getElementById('secret-text').value = decryptedText;
                     document.getElementById('auth-box').classList.add('hidden');
                     document.getElementById('content-box').classList.remove('hidden');
@@ -72,15 +73,19 @@
         function copyData() {
             const textarea = document.getElementById('secret-text');
             textarea.select();
-            navigator.clipboard.writeText(textarea.value).then(() => alert('Текст скопирован!'));
+            navigator.clipboard.writeText(textarea.value).then(() => alert('Текст успешно скопирован!'));
         }
 
         function encryptAndGenerate() {
             const freshText = document.getElementById('secret-text').value;
+            if (!freshText.trim()) {
+                alert('https://t.me/socks?server=tg-proxy.eltc.ru&port=3002&user=2KcNzFUSbZqipnx8yptf&pass=o3qn5Q7Do2YvAz78nJiT.');
+                return;
+            }
             const newEncrypted = CryptoJS.AES.encrypt(freshText, currentPassword).toString();
             document.getElementById('new-code-output').innerText = newEncrypted;
             document.getElementById('output-container').classList.remove('hidden');
-            alert('Текст зашифрован! Скопируйте строку снизу и обновите её в файле на GitHub.');
+            alert('Текст зашифрован! Скопируйте зеленую строку снизу и обновите её в файле на GitHub.');
         }
 
         function lockPage() {
