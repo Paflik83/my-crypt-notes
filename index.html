@@ -24,13 +24,13 @@
 
     <div class="container" id="auth-box">
         <h3>Введите ключ доступа</h3>
-        <input type="password" id="password-input" placeholder="Пароль для расшифровки" onkeydown="if(event.key==='Enter') decryptData()">
+        <input type="password" id="password-input" placeholder="Введите пароль (например, 1234)" onkeydown="if(event.key==='Enter') decryptData()">
         <button onclick="decryptData()">Открыть архив</button>
     </div>
 
     <div class="container hidden" id="content-box">
         <h3>Ваша информация (можно редактировать):</h3>
-        <textarea id="secret-text" placeholder="Вставьте сюда ваши ссылки..."></textarea>
+        <textarea id="secret-text" placeholder="Вставьте сюда ваши ссылки или нужный текст..."></textarea>
         
         <div class="btn-group">
             <button onclick="copyData()">Скопировать текст</button>
@@ -45,14 +45,24 @@
     </div>
 
     <script>
-        // ТЕКУЩИЙ ПАРОЛЬ: 1234
-        // Ниже зашифрована рабочая фраза "Мой сейф открыт!" специально под этот пароль
-        let ENCRYPTED_DATA = "U2FsdGVkX1+vG0q04vCshC6n+vO6pG7L39/D/L6h5/A=";
+        // ВНИМАНИЕ: Сюда вставляется ТОЛЬКО созданная ВАМИ строка. 
+        // Если здесь пусто или пароль не подходит — сайт автоматически откроет чистый блокнот под ЛЮБОЙ введенный вами пароль!
+        let ENCRYPTED_DATA = ""; 
 
         let currentPassword = "";
 
         function decryptData() {
             currentPassword = document.getElementById('password-input').value;
+            if(!currentPassword) { alert('Введите пароль!'); return; }
+
+            if (ENCRYPTED_DATA === "" || ENCRYPTED_DATA.startsWith("ЗАМЕНИТЕ")) {
+                // Если сайт запускается впервые, он просто открывает пустой блокнот и запоминает ваш пароль
+                document.getElementById('secret-text').value = "Добро пожаловать в ваш новый сейф! Стерите этот текст, вставьте свои ссылки и нажмите кнопку 'Сохранить изменения'.";
+                document.getElementById('auth-box').classList.add('hidden');
+                document.getElementById('content-box').classList.remove('hidden');
+                return;
+            }
+
             try {
                 const bytes = CryptoJS.AES.decrypt(ENCRYPTED_DATA, currentPassword);
                 const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
@@ -81,10 +91,11 @@
                 alert('Текст не может быть пустым!');
                 return;
             }
+            // Шифрование происходит на ВАШЕМ устройстве с ВАШИМ паролем
             const newEncrypted = CryptoJS.AES.encrypt(freshText, currentPassword).toString();
-            document.getElementById('new-code-output').innerText = newEncrypted;
+            document.getElementById('new-code-output').innerText = 'let ENCRYPTED_DATA = "' + newEncrypted + '";';
             document.getElementById('output-container').classList.remove('hidden');
-            alert('Текст зашифрован! Скопируйте строку снизу и обновите её в файле на GitHub.');
+            alert('Текст зашифрован вашим паролем! Скопируйте зеленую строку снизу и обновите её в коде на GitHub через карандаш.');
         }
 
         function lockPage() {
