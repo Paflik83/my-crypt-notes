@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
     <title>Личный Сейф</title>
     <script src="https://cloudflare.com"></script>
     <style>
@@ -24,7 +25,7 @@
 
     <div class="container" id="auth-box">
         <h3>Введите ключ доступа</h3>
-        <input type="password" id="password-input" placeholder="Введите пароль" onkeydown="if(event.key==='Enter') decryptData()">
+        <input type="password" id="password-input" placeholder="Введите ваш пароль" onkeydown="if(event.key==='Enter') decryptData()">
         <button onclick="decryptData()">Открыть архив</button>
     </div>
 
@@ -39,14 +40,14 @@
         </div>
 
         <div id="output-container" class="hidden">
-            <p style="font-size: 13px; color: #aaa; margin-bottom: 5px;">Скопируйте эту строку и замените ей значение ENCRYPTED_DATA в коде на GitHub:</p>
+            <p style="font-size: 13px; color: #aaa; margin-bottom: 5px;">Скопируйте эту строку целиком и замените ей значение ENCRYPTED_DATA в коде на GitHub:</p>
             <div class="output-box" id="new-code-output"></div>
         </div>
     </div>
 
     <script>
-        // Здесь уже зашифрован текст "Мой сейф успешно настроен!" под пароль 1234
-        let ENCRYPTED_DATA = "U2FsdGVkX1+v1K+gH5bKOfu+gR06X7f6mD29/X7l8yA=";
+        // Изначально здесь пусто. Сюда встанет созданный вами личный код.
+        let ENCRYPTED_DATA = ""; 
 
         let currentPassword = "";
 
@@ -54,8 +55,16 @@
             currentPassword = document.getElementById('password-input').value;
             if(!currentPassword) { alert('Введите пароль!'); return; }
 
+            // Если сайт пустой (первый запуск), пускаем под любым введенным паролем
+            if (ENCRYPTED_DATA === "" || ENCRYPTED_DATA.trim().length < 10) {
+                document.getElementById('secret-text').value = "Сейф успешно активирован!\n\n1. Сотрите этот текст.\n2. Напишите ваши ссылки или личные заметки.\n3. Нажмите зеленую кнопку 'Сохранить изменения'.";
+                document.getElementById('auth-box').classList.add('hidden');
+                document.getElementById('content-box').classList.remove('hidden');
+                return;
+            }
+
             try {
-                const bytes = CryptoJS.AES.decrypt(ENCRYPTED_DATA, currentPassword);
+                const bytes = CryptoJS.AES.decrypt(ENCRYPTED_DATA.trim(), currentPassword);
                 const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
 
                 if (decryptedText && decryptedText.length > 0) {
@@ -63,10 +72,10 @@
                     document.getElementById('auth-box').classList.add('hidden');
                     document.getElementById('content-box').classList.remove('hidden');
                 } else {
-                    alert('Неверный пароль!');
+                    alert('Неверный пароль! Проверьте раскладку клавиатуры.');
                 }
             } catch (e) {
-                alert('Ошибка расшифровки! Проверьте пароль.');
+                alert('Ошибка расшифровки! Проверьте пароль или отключите встроенный переводчик страниц.');
             }
         }
 
@@ -84,17 +93,23 @@
             }
             
             if (!currentPassword) {
-                currentPassword = prompt("Подтвердите текущий пароль:");
+                currentPassword = prompt("Подтвердите ваш текущий пароль для шифрования:");
                 if (!currentPassword) return;
             }
 
             try {
+                // Шифруем данные
                 const newEncrypted = CryptoJS.AES.encrypt(freshText, currentPassword).toString();
-                document.getElementById('new-code-output').innerText = 'let ENCRYPTED_DATA = "' + newEncrypted + '";';
+                
+                // Формируем чистую готовую строчку для вставки в GitHub
+                const finalLine = 'let ENCRYPTED_DATA = "' + newEncrypted + '";';
+                
+                document.getElementById('new-code-output').innerText = finalLine;
                 document.getElementById('output-container').classList.remove('hidden');
-                alert('Успешно зашифровано! Зелёная строка сгенерирована внизу страницы.');
+                
+                alert('Успешно зашифровано! Зелёная строка сгенерирована в самом низу страницы. Прокрутите экран вниз и скопируйте её.');
             } catch (err) {
-                alert('Ошибка при шифровании: ' + err.message);
+                alert('Техническая ошибка при шифровании: ' + err.message);
             }
         }
 
