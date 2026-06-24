@@ -45,12 +45,11 @@
     </div>
 
     <script>
-        // Изначально здесь пусто. Сюда встанет созданный вами личный код.
-        let ENCRYPTED_DATA = "let ENCRYPTED_DATA = "V28UgaAsFcwZHMAJcmy+tCweWOAOxIa/S0U8U1+EFcqkyUmOQZpx9tWBQS1kBDvrAvwpQmsTprDM3/zpsm3o7Y8xNGbrrlvr1fNNTYFTzweQfqIHY+2YBkJ5juRX5oOMXRhc2CrJoNwAt9I/0ObohZ6oxcchV/xzjUF/PRrpZCOVt8PAJSJP13r0A/wiVSj1vx5VpvxB1ibimVm12ngtfDv0VM2dfRoz2R88hbXvSrdwOzLUXoF9qbKfHAZCoVD8Wr6OsYfUnNB8UQ8Jh9fNSSIKB4RaLVDon2SGwpPGIMnOIzt36poT3hcHSNzhyQslHRUmICecdgF/DqDUSor/Ngd6/FccbVpprIYEHEmi3ggVnbrvwubOg5DX5A7iyQQ2gjmvvivJD5djMDOFPFhzl1LRN47VQvUG19DgBSEuG5CgbAz5CFoiyf37cVjNhOb7xKDjG20rIPUPAt/MkqQeStGAYtNVAx4zKMquOy2Vxg7B8yIfZXETqzuGZ5AGM0J+jGpL32plnOgZgyM8c0glR/GTTgZ1OcEMZCBKaEbK9GpDjsLMfjlt8DslSgycUhi2PtbAJEhZQll58WXRPHfW0RogRSFjH22xG4KyfTuqOOBsW2Qz89+0GCnWH0YXKCR33360f9+/dielRsDbAT2qdgNLmYGdvTg8xL6MSERvE0XvJ36BBXrqDEXQmDr5+Lzd606KQ9ODvbFH8YYnF96aKIuLIeYhd2SLiAtqTyY7dX4HAOqHxJCUQ//CkbMgMgXI8H7693Fn+dbRczIQ9jLNyg7rieU86e2KFr19Flw9RLXVXVqhmmYyGeUJW/jGlpDagslSGsTFkbAuGmwH8fCKPnhC71FbRLiIeify8IwaBeumz1lbpPYvcszVVCt74w==";;
+        // Исправленная строка с вашими зашифрованными данными
+        let ENCRYPTED_DATA = "V28UgaAsFcwZHMAJcmy+tCweWOAOxIa/S0U8U1+EFcqkyUmOQZpx9tWBQS1kBDvrAvwpQmsTprDM3/zpsm3o7Y8xNGbrrlvr1fNNTYFTzweQfqIHY+2YBkJ5juRX5oOMXRhc2CrJoNwAt9I/0ObohZ6oxcchV/xzjUF/PRrpZCOVt8PAJSJP13r0A/wiVSj1vx5VpvxB1ibimVm12ngtfDv0VM2dfRoz2R88hbXvSrdwOzLUXoF9qbKfHAZCoVD8Wr6OsYfUnNB8UQ8Jh9fNSSIKB4RaLVDon2SGwpPGIMnOIzt36poT3hcHSNzhyQslHRUmICecdgF/DqDUSor/Ngd6/FccbVpprIYEHEmi3ggVnbrvwubOg5DX5A7iyQQ2gjmvvivJD5djMDOFPFhzl1LRN47VQvUG19DgBSEuG5CgbAz5CFoiyf37cVjNhOb7xKDjG20rIPUPAt/MkqQeStGAYtNVAx4zKMquOy2Vxg7B8yIfZXETqzuGZ5AGM0J+jGpL32plnOgZgyM8c0glR/GTTgZ1OcEMZCBKaEbK9GpDjsLMfjlt8DslSgycUhi2PtbAJEhZQll58WXRPHfW0RogRSFjH22xG4KyfTuqOOBsW2Qz89+0GCnWH0YXKCR33360f9+/dielRsDbAT2qdgNLmYGdvTg8xL6MSERvE0XvJ36BBXrqDEXQmDr5+Lzd606KQ9ODvbFH8YYnF96aKIuLIeYhd2SLiAtqTyY7dX4HAOqHxJCUQ//CkbMgMgXI8H7693Fn+dbRczIQ9jLNyg7rieU86e2KFr19Flw9RLXVXVqhmmYyGeUJW/jGlpDagslSGsTFkbAuGmwH8fCKPnhC71FbRLiIeify8IwaBeumz1lbpPYvcszVVCt74w==";
 
         let currentPassword = "";
 
-        // Вспомогательные функции для работы со встроенным крипто-API браузера
         async function getKey(password, salt) {
             const enc = new TextEncoder();
             const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveKey"]);
