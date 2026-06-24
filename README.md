@@ -35,7 +35,7 @@ Whenever you need to modify your saved links or text, follow these steps:
 5. Scroll to the very bottom of the page and **copy the generated line**:
    `let ENCRYPTED_DATA = "U2FsdGVkX1...";`
 6. Go to this GitHub repository, open the `index.html` file, and click the **pencil icon** to edit.
-7. Replace line **№53** with your newly copied string.
+7. Replace line **№49** with your newly copied string.
 8. Click the green **"Commit changes"** button to save.
 
 ---
