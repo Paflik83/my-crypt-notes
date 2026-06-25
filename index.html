@@ -46,8 +46,7 @@
 
     <script>
         // Исправленная строка с вашими зашифрованными данными
-let ENCRYPTED_DATA = "tUMZxYGUYKI2B118Cw7gBMj/2dOF926mYS0vkIM5x02XRHkYliwz+d97iXBgYl5KePgmSDF0UXZU83LKIgu3FRRJmj9VtbWkVd6TCsMJ8SmzN/0MorNGw8w0rqrz1gJuHAYiq3GhW/XC70j0IjcB60LSQf8MxMf5X+nIWKe5ovnCadUNirCW3JBXuTHkySdpJYoaCybaPOx+XM0KMyzKlYGAtWKCIV2l4bKjcA5TRAtKtSMrTm9xNW91lXo4wrrvwyBdEJ4WNu7eErGMDm42Cl8Cg3dJMuMHVll+QzWucghCxbVb6sx4OoQ5jlEJXQqSF19sprQhDKgx0VcLXYksFMl81YVi9lQ46x/ScnAoIKAV7C9qPIyuHLjGTZbo3eWjiQEhnCar7bxlC/GD";        let currentPassword = "";
-
+let ENCRYPTED_DATA = "g1CVn7EFr/yfcZLkjMmjmB9VBsHsfGqEsVIrzHzh4RtSdgQD8gBenDQyaTYre49OcsRgXswOjU9wN0G1sBkmW2iGR3WqIXT0xX1hVz87c4mAPu62s59EiuYKYgmrZueprwS3";
         async function getKey(password, salt) {
             const enc = new TextEncoder();
             const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveKey"]);
